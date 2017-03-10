@@ -36,13 +36,17 @@ V(pop_graph)$location = pop_attributes$location[ix]
 V(pop_graph)$lat = pop_attributes$lat[ix]
 V(pop_graph)$lon = pop_attributes$lon[ix]
 
+# Make Readable Strings for populations names:
+pretty_pops = paste(pop_attributes$species, pop_attributes$location, sep=" @ ")
+pop_codes = paste0("(", pop_attributes$population, ")")
+pretty_pops = paste(pretty_pops, pop_codes)
 
 # Read the All Collars Database into a dataframe:
 collars_file = 'AllCollarsList.txt'
 collars = read.csv(collars_file, header=TRUE, stringsAsFactors=F)
 
 # Add population field to the collars table:
-collars = full_join(collars, pop_attributes)
+collars = full_join(collars, pop_attributes[c('species','location','population')])
 
 #### Graphics: ####
 # Plot network graph:
