@@ -1,0 +1,25 @@
+population,species,location,lon,lat
+warr,bighorn,Warren,-119.25621,38.0182
+gibb,bighorn,Mt. Gibbs,-119.19772,37.84906
+cath,bighorn,Cathedral,-119.31469,37.74637
+conv,bighorn,Convict Creek,-118.80133,37.52509
+whee,bighorn,Wheeler Ridge,-118.67137,37.43227
+tabo,bighorn,Taboose Creek,-118.41793,37.0287
+sawm,bighorn,Sawmill Canyon,-118.37245,36.93526
+baxt,bighorn,Mt. Baxter,-118.33021,36.84171
+bubb,bighorn,Bubbs Creek,-118.48292,36.80009
+will,bighorn,Mt. Williamson,-118.30096,36.65231
+lang,bighorn,Mt. Langley,-118.21974,36.52447
+olan,bighorn,Olancha Peak,-118.11252,36.26031
+biga,bighorn,Big Arroyo,-118.49266,36.51142
+laur,bighorn,Laurel Creek,-118.44068,36.34934
+cd_d,deer,CD,-118.54221,37.71746
+rv_d,deer,RV,-118.55034,37.39549
+gd_d,deer,GD,-118.2303,37.006
+mw_d,deer,MW,-119.2359,38.23864
+id_e,elk,Independence,-118.16044,36.79294
+lp_e,elk,Lone Pine,-118.00123,36.63145
+bp_e,elk,Big Pine,-118.3229,37.09935
+bi_e,elk,Bishop,-118.38138,37.33739
+bo_p,pronghorn,Bodie Hills,-119.26027,38.40051
+lp_b,bobcat,Lone Pine,-118.13932,36.58842
