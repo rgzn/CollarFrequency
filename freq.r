@@ -19,6 +19,17 @@ ALL_FREQUENCIES = seq(MIN_FREQ, MAX_FREQ, by=FREQ_INC)
 attr_file = "attributes.csv"
 network_file = "network.csv"
 
+collar_headers= c("frequency",
+                  "capture_date",
+                  "species",
+                  "animal_id",
+                  "region",
+                  "type",
+                  "model",
+                  "status",
+                  "location")
+
+
 
 #### Initialization: ####
 
@@ -43,10 +54,10 @@ pretty_pops = paste(pretty_pops, pop_codes)
 
 # Read the All Collars Database into a dataframe:
 collars_file = 'AllCollarsList.txt'
-collars = read.csv(collars_file, header=TRUE, stringsAsFactors=F)
+collars = read.csv(collars_file, header=FALSE, stringsAsFactors=F, col.names=collar_headers)
 
 # Add population field to the collars table:
-collars = full_join(collars, pop_attributes[c('species','location','population')])
+collars = full_join(collars, pop_attributes[c('species','location','population')], by = c("species", "location"))
 
 #### Graphics: ####
 # Plot network graph:
