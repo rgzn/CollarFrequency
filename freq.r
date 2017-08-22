@@ -111,6 +111,12 @@ find_neighborhood = function(pop_graph, input_pops) {
   return(neighborhood)
 }
 
+find_neighborhood_df = function(pop_graph, pop_attributes, input_pops) {
+  neighborhood = find_neighborhood(pop_graph, input_pops)$name
+  neighborhood_df = pop_attributes[ pop_attributes$population %in% neighborhood, ]
+  return(neighborhood_df[,1:3])
+}
+
 
 #### Functions for finding available populations: ####
 
@@ -118,6 +124,12 @@ find_conflict_collars = function(pop_graph, collars, input_freq, freq_margin = 0
   collars_aw = collars[grep("AW",collars$status ),]
   collars_near = collars_aw[abs(collars_aw$frequency - input_freq) < freq_margin,]
   return(collars_near)
+}
+
+find_collars_in_range = function(pop_graph, collars, lo_f, hi_f) {
+  collars_aw = collars[grep("(AW|order)",collars$status ),]
+  collars_in_range = collars_aw[(collars_aw$frequency >= lo_f) & (collars_aw$frequency <= hi_f) , ]
+  return(collars_in_range)
 }
 
 find_occupied_pops = function(pop_graph, collars, input_freq, freq_margin = 0.005) {
@@ -165,3 +177,20 @@ find_available_freqs = function(pop_graph, collars, input_pops, freq_margin=0.00
   avail_freqs = band_complement(input_freqs=neighborhood_freqs, all_freqs=all_freqs, freq_margin=freq_margin)
   return(avail_freqs)
 }
+
+plot_available = function(pop_graph, collars, input_pops, freq_margin=0.005, all_freqs=ALL_FREQUENCIES) {
+  f = find_available_freqs(pop_graph, collars, input_pops, freq_margin = freq_margin, all_freq = all_freqs)
+  f = data.frame(f)
+  ylabel = do.call(paste, as.list(input_pops))
+  ggplot(f, aes(f)) + 
+    geom_histogram(binwidth=0.001) + 
+    scale_y_continuous(breaks=NULL) + 
+    scale_x_continuous(breaks=seq(159,161,by=0.20)) + 
+    theme(axis.title.y= element_blank(), 
+          axis.ticks.y = element_blank(), 
+          axis.text.y = element_blank(), 
+          panel.background = element_rect(fill="transparent",colour=NA),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank())
+}
+

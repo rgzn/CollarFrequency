@@ -43,7 +43,7 @@ ui <- navbarPage( "Collar Placer",
            #plotPNG(func=netMap(baseMapPlot, pop_graph)),
            ),
   tabPanel(
-    "Find Populations for Collars",
+    "Find Available Frequencies",
     sidebarLayout(
       sidebarPanel(
         numericInput(inputId='freqMargin',
@@ -61,6 +61,14 @@ ui <- navbarPage( "Collar Placer",
       
       # Show a plot of the generated distribution
       mainPanel(
+        h4("Frequencies Available in All Selected Populations:"),
+        plotOutput("freqsAvailPlot", 
+                   hover = hoverOpts(id="plot_hover"),
+                   brush = brushOpts(id="freq_brush")
+        ),
+        verbatimTextOutput("hover_info"),
+        h4("Collars in selected range and interfering populations:"),
+        tableOutput("brush_table")
       )
     )
            
@@ -142,7 +150,31 @@ server <- function(input, output) {
    #                 segment.color="red", palette ="Set3"
    #   )
    # })
+   output$selectedPops <- renderTable({
+     pop_attributes[pop_attributes$population %in% input$inputPops, c('population', 'species', 'location')]
+   }, spacing="xs")
    
+   output$interferencePops <- renderTable({
+     find_neighborhood_df(pop_graph, pop_attributes, input$inputPops)
+   })
+   
+   output$freqsAvailPlot <- renderPlot({
+     plot_available(pop_graph, collars, input$inputPops, freq_margin=input$freqMargin)
+   })
+   
+   output$hover_info <- renderPrint({
+     cat("Frequency at mouse:\n", 
+         as.character(input$plot_hover$x) )
+   })
+   
+   output$brush_table <- renderTable({
+     neighbors = find_neighborhood(pop_graph, input$inputPops)$name
+     find_collars_in_range(pop_graph, 
+                           collars[collars$population %in% neighbors, ], 
+                           lo_f = input$freq_brush$xmin, 
+                           hi_f = input$freq_brush$xmax)
+   },
+   digits=3,striped=T, bordered=T,hover=T,spacing="xs")
    
    output$availablePops <- renderTable({
      df_from_nodes(
@@ -154,6 +186,7 @@ server <- function(input, output) {
    output$occupiedPops <- renderTable({
      find_conflict_pops(pop_graph, collars, input_freq=input$frequency, freq_margin=input$freqMargin)
    })
+   
    output$popAttributes <- renderDataTable({
      pop_attributes
    })
@@ -166,6 +199,7 @@ server <- function(input, output) {
    output$selectedPops <- renderTable({
      pop_attributes[pop_attributes$population %in% input$inputPops, c('population', 'species', 'location')]
    })
+   
    output$allCollars <- renderDataTable({
      collars
    })
