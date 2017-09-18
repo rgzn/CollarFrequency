@@ -1,14 +1,7 @@
-library(igraph)
 #(networkD3)
-library(network)
-library(sna)
-library(ggplot2)
-library(intergraph)
-library(GGally)
-library(dplyr)
-library(data.table)
-library(ggmap)
-# library(ggraph)
+
+# library routines added to app.R, added in check for M:/drive - get files from M: if exists, o/w use local copy 
+#  use msAccess db (query) for most recent copy of database if running 32 bit R
 
 #### Constants: ####
 MIN_FREQ = 159.0
@@ -18,17 +11,6 @@ ALL_FREQUENCIES = seq(MIN_FREQ, MAX_FREQ, by=FREQ_INC)
 
 attr_file = "attributes.csv"
 network_file = "network.csv"
-
-collar_headers= c("frequency",
-                  "capture_date",
-                  "species",
-                  "animal_id",
-                  "region",
-                  "type",
-                  "model",
-                  "status",
-                  "location")
-
 
 
 #### Initialization: ####
@@ -52,13 +34,40 @@ pretty_pops = paste(pop_attributes$species, pop_attributes$location, sep=" @ ")
 pop_codes = paste0("(", pop_attributes$population, ")")
 pretty_pops = paste(pretty_pops, pop_codes)
 
-# Read the All Collars Database into a dataframe:
-collars_file = 'AllCollarsList.txt'
-collars = read.csv(collars_file, header=FALSE, stringsAsFactors=F, col.names=collar_headers)
+# Read the All Collars Database into a dataframe:  check for 32 / 64 bit and network connectivity use Union Query if 32, o/w read txt file
+# network location    M:\DatabaseTables
+
+test.sys<-Sys.getenv("R_ARCH")
+if(test.sys== "/i386" & dir.exists("M:/")){
+  # 32 bit allows for using MS Access database directly
+myconn <-odbcConnectAccess("M:/AllProgramCollars.mdb")
+sql1<-"SELECT Bobcat.Frequency, Bobcat.CaptDate, Bobcat.AnimalType, Bobcat.ID, Bobcat.Location, Bobcat.Type,Bobcat.Make, Bobcat.Status, Bobcat.HU FROM Bobcat"
+sql2<-"SELECT SheepCollarsOffice.CollarFreq,'' AS ddate,  SheepCollarsOffice.AnimalType, '' AS id,SheepCollarsOffice.Location, SheepCollarsOffice.CollarType, SheepCollarsOffice.CollarMake, SheepCollarsOffice.Status, SheepCollarsOffice.HU FROM SheepCollarsOffice"
+sql3<-"SELECT Elk.Frequency, Elk.CaptDate, Elk.AnimalType, Elk.ID, Elk.Location, Elk.Type, Elk.Make, Elk.Status, Elk.HU FROM Elk"
+sql4<-"SELECT DogCollars.Frequency, DogCollars.CaptDate, DogCollars.AnimalType, DogCollars.ID, DogCollars.Location, DogCollars.Type, DogCollars.Make, DogCollars.Status, DogCollars.HU FROM DogCollars"
+sql5<-"SELECT OtherSpecies.Frequency, OtherSpecies.CaptDate, OtherSpecies.AnimalType, OtherSpecies.ID, OtherSpecies.Location, OtherSpecies.Type, OtherSpecies.Make, OtherSpecies.Status, OtherSpecies.HU FROM OtherSpecies"
+sql6<-"SELECT Pronghorn.Frequency, Pronghorn.CaptDate, Pronghorn.AnimalType, Pronghorn.ID, Pronghorn.Location, Pronghorn.Type, Pronghorn.Make, Pronghorn.Status, Pronghorn.HU FROM Pronghorn"
+sql7<-"SELECT SageGrouse2014.Frequency, SageGrouse2014.CaptDate, SageGrouse2014.AnimalType, SageGrouse2014.ID, SageGrouse2014.Location, SageGrouse2014.Type, SageGrouse2014.Make, SageGrouse2014.Status, SageGrouse2014.HU FROM SageGrouse2014"
+sql8<-"SELECT RVDall.CollarFreq, '' AS [date], 'deer' AS AnimalType, RVDall.DeerID, Left([DeerID],2) AS Location, 'VHF/GPS' AS type, 'Various' AS Make, RVDall.Status, Left([DeerID],2) AS HU FROM RVDall"
+sql9<-"SELECT AllSheepCollars.VHFColFreq, left([AllSheepCollars].[Datedt],10) as date1, 'bighorn' AS AnimalType, AllSheepCollars.AnimalID,AllSheepCollars.RU, AllSheepCollars.Type, AllSheepCollars.VHFMake AS Make, AllSheepCollars.StatusVHF, AllSheepCollars.Herd FROM AllSheepCollars WHERE (((AllSheepCollars.StatusVHF) Like 'ow' Or (AllSheepCollars.StatusVHF)='aw' Or (AllSheepCollars.StatusVHF)='ORD'))"
+sql10<-"SELECT CurrentCollarRVDOffice.CollarFreq, '' AS [date], 'deer' AS AnimalType, CurrentCollarRVDOffice.DeerID, Left([DeerID],2) AS Location, 'VHF' AS type, 'ATS' AS Make, CurrentCollarRVDOffice.Status, Left([DeerID],2) AS HU FROM CurrentCollarRVDOffice"
+sql11<-"SELECT AllSheepCollars.GPSColFreq, Left(AllSheepCollars.Datedt,10) AS date1, 'bighorn' AS AnimalType, AllSheepCollars.AnimalID, AllSheepCollars.RU, IIf([StatusGPS] Like '*w','GPS','') AS Type, AllSheepCollars.GPSMake AS Make, AllSheepCollars.StatusGPS, AllSheepCollars.Herd FROM AllSheepCollars WHERE (((AllSheepCollars.GPSColFreq) Is Not Null) AND ((AllSheepCollars.StatusGPS) Like 'aw*' Or (AllSheepCollars.StatusGPS) Like 'ow' Or (AllSheepCollars.StatusGPS) Like 'ORD  '))"
+sql12<-"SELECT CollarsOnOrder.Frequency, CollarsOnOrder.CaptDate, CollarsOnOrder.AnimalType, CollarsOnOrder.ID, CollarsOnOrder.Location, CollarsOnOrder.Type, CollarsOnOrder.Make, CollarsOnOrder.Status, CollarsOnOrder.HU FROM CollarsOnOrder ORDER BY Bobcat.Frequency;"
+qry<-paste(sql1,sql2,sql3,sql4,sql5,sql6,sql7,sql8,sql9,sql10,sql11,sql12,sep=" UNION ")
+collars <- sqlQuery(myconn,qry)
+close(myconn) }else{
+
+# 64 bit solution (no RODBC)
+if(dir.exists("M:/")){dir='M:/DatabaseTables'
+collars_file = paste(dir,'AllCollarsList.txt',sep='/')
+}else{collars_file = 'AllCollarsList.txt'
+collars = read.csv(collars_file, header=TRUE, stringsAsFactors=F)}}
+names(collars)=c("frequency","capture_date","species","animal_id","region","type","model","status","location")
+collars$species<-as.character(collars$species)
+collars$location<-as.character(collars$location)
 
 # Add population field to the collars table:
-collars = full_join(collars, pop_attributes[c('species','location','population')], by = c("species", "location"))
-
+collars = full_join(collars, pop_attributes[c('species','location','population')])
 #### Graphics: ####
 # Plot network graph:
 network_plot = ggnet2(pop_graph, mode='kamadakawai',
@@ -121,7 +130,7 @@ find_neighborhood_df = function(pop_graph, pop_attributes, input_pops) {
 #### Functions for finding available populations: ####
 
 find_conflict_collars = function(pop_graph, collars, input_freq, freq_margin = 0.005) {
-  collars_aw = collars[grep("AW",collars$status ),]
+  collars_aw = collars[grep("(AW|order)",collars$status ),]
   collars_near = collars_aw[abs(collars_aw$frequency - input_freq) < freq_margin,]
   return(collars_near)
 }
@@ -193,4 +202,3 @@ plot_available = function(pop_graph, collars, input_pops, freq_margin=0.005, all
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank())
 }
-

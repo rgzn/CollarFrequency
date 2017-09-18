@@ -6,15 +6,34 @@
 #
 #    http://shiny.rstudio.com/
 #
+#  added in library load routine to automatically load libraries if not installed  -- load RODBC only if 32 bit system
+#  changed the rendering for the Find Populations for Collars  tab for readability on smaller monitors
 
-library(shiny)
-library(shinythemes)
+rm(list=ls())							#clears the workspace
+if(Sys.getenv("R_ARCH")== "/i386" ){    # install RODBC only if using 32 bit system
+packages<-c("RODBC","shiny","shinythemes","igraph","network","sna","intergraph","GGally","dplyr")	# libraries to install
+}else{
+packages<-c("shiny","shinythemes","igraph","network","sna","intergraph","GGally","dplyr")	# libraries to install
+}
+# Load libraries
+n.lib<- length(packages)
+for (l in 1:n.lib) {
+  if (!require(packages[l], character.only=T, quietly=T)) {
+    install.packages(packages[l])
+    library(packages[l], character.only=T)
+  }}
+
+rm(list=ls(all=TRUE))
+
+#library(shiny)
+#library(shinythemes)
+library(ggplot2)
 
 source("freq.r")
 
 
 # Define UI for application that draws a histogram
-ui <- navbarPage( "Collar Placer",
+ui <- navbarPage( "collard",
   theme=shinytheme('darkly'),
   
   # Application title
@@ -46,7 +65,7 @@ ui <- navbarPage( "Collar Placer",
     "Find Available Frequencies",
     sidebarLayout(
       sidebarPanel(
-        numericInput(inputId='freqMargin',
+        numericInput(inputId='freqFinderMargin',
                      label='Margin between collars (MHz):',
                      value=0.005,
                      min=0.001,
@@ -55,7 +74,8 @@ ui <- navbarPage( "Collar Placer",
         selectInput('inputPops', 'Select Populations:',
                     pop_attributes$population,
                     multiple=T, selectize=F),
-        tableOutput("selectedPops")
+        h4("Interfering Populations:"),
+        tableOutput("interferencePops")
         
       ),
       
@@ -63,9 +83,9 @@ ui <- navbarPage( "Collar Placer",
       mainPanel(
         h4("Frequencies Available in All Selected Populations:"),
         plotOutput("freqsAvailPlot", 
-                   hover = hoverOpts(id="plot_hover"),
-                   brush = brushOpts(id="freq_brush")
-        ),
+                    hover = hoverOpts(id="plot_hover"),
+                    brush = brushOpts(id="freq_brush")
+                   ),
         verbatimTextOutput("hover_info"),
         h4("Collars in selected range and interfering populations:"),
         tableOutput("brush_table")
@@ -73,48 +93,44 @@ ui <- navbarPage( "Collar Placer",
     )
            
 
+           ), 
+   tabPanel(
+    ("Find Populations for Collars"),
+           fluidRow(
+             column(width = 6,
+               
+                 numericInput(inputId='frequency',
+                              label='Frequency of New Collar (MHz)',
+                              value=160.0,
+                              min=159.0,
+                              max=161.0,
+                              step=0.001),
+                 
+                 selectInput("species", "Specify target species:",
+                             choices = c(
+                               "bighorn",
+                               "deer",
+                               "bobcat",
+                               "elk",
+                               "pronghorn",
+                               "bear",
+                               "none"
+                             )),
+                 
+                 numericInput(inputId='popFinderMargin',
+                              label='Margin between collar frequencies (MHz):',
+                              value=0.005,
+                              min=0.001,
+                              max=0.050,
+                              step=0.0001)
+          ),column(6,
+                   h4("Available Target Populations:"),
+                   tableOutput("availablePops")
+          )
            ),
-  tabPanel(
-    "Find Populations for Collars",
-    sidebarLayout(
-      sidebarPanel(
-        numericInput(inputId='frequency',
-                     label='Frequency of New Collar (MHz)',
-                     value=160.0,
-                     min=159.0,
-                     max=161.0,
-                     step=0.001),
-        
-        selectInput("species", "Specify target species:",
-                    choices = c(
-                      "bighorn",
-                      "deer",
-                      "bobcat",
-                      "elk",
-                      "pronghorn",
-                      "bear",
-                      "none"
-                    )),
-        
-        numericInput(inputId='freqMargin',
-                     label='Margin between collar frequencies (MHz):',
-                     value=0.005,
-                     min=0.001,
-                     max=0.050,
-                     step=0.0001)
-        
-      ),
-      
-      # Show a plot of the generated distribution
-      mainPanel(
-        
-        h4("Available Target Populations:"),
-        tableOutput("availablePops"),
-        
-        h4("Conflicting Collars"),
-        tableOutput("conflictCollars")
-      )
-    )
+    fluidRow(column(12,h4("Conflicting Collars"),
+                    tableOutput("conflictCollars")))
+    
   )
   # navbarMenu("Help",
   #            tabPanel("Supporting Files"),
@@ -124,7 +140,7 @@ ui <- navbarPage( "Collar Placer",
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-   
+  
    output$distPlot <- renderPlot({
       # generate bins based on input$bins from ui.R
       x    <- faithful[, 2] 
@@ -159,7 +175,7 @@ server <- function(input, output) {
    })
    
    output$freqsAvailPlot <- renderPlot({
-     plot_available(pop_graph, collars, input$inputPops, freq_margin=input$freqMargin)
+     plot_available(pop_graph, collars, input$inputPops, freq_margin=input$freqFinderMargin)
    })
    
    output$hover_info <- renderPrint({
@@ -176,15 +192,16 @@ server <- function(input, output) {
    },
    digits=3,striped=T, bordered=T,hover=T,spacing="xs")
    
+   
    output$availablePops <- renderTable({
      df_from_nodes(
-       find_available_pops(pop_graph, collars, input_freq=input$frequency, input_species=input$species, freq_margin=input$freqMargin)
+       find_available_pops(pop_graph, collars, input_freq=input$frequency, input_species=input$species, freq_margin=input$popFinderMargin)
      )
    },
    hover=T, border=T)
    
    output$occupiedPops <- renderTable({
-     find_conflict_pops(pop_graph, collars, input_freq=input$frequency, freq_margin=input$freqMargin)
+     find_conflict_pops(pop_graph, collars, input_freq=input$frequency, freq_margin=input$popFinderMargin)
    })
    
    output$popAttributes <- renderDataTable({
@@ -192,17 +209,14 @@ server <- function(input, output) {
    })
    
    output$conflictCollars <- renderTable({
-     find_conflict_collars(pop_graph, collars, input_freq=input$frequency, freq_margin=input$freqMargin)
+     find_conflict_collars(pop_graph, collars, input_freq=input$frequency, freq_margin=input$popFinderMargin)
    },
-   striped=T, bordered=T,hover=T,spacing="xs")
-   
-   output$selectedPops <- renderTable({
-     pop_attributes[pop_attributes$population %in% input$inputPops, c('population', 'species', 'location')]
-   })
+   digits=3,striped=T, bordered=T,hover=T,spacing="xs")
    
    output$allCollars <- renderDataTable({
      collars
-   })
+   }, options=list(autoWidth=T)
+   )  
 }
 
 # Run the application 
