@@ -10,10 +10,10 @@
 #  changed the rendering for the Find Populations for Collars  tab for readability on smaller monitors
 
 rm(list=ls())							#clears the workspace
-if(Sys.getenv("R_ARCH")== "/i386" ){    # install RODBC only if using 32 bit system
-packages<-c("RODBC","shiny","shinythemes","igraph","network","sna","intergraph","GGally","dplyr")	# libraries to install
-}else{
-packages<-c("shiny","shinythemes","igraph","network","sna","intergraph","GGally","dplyr")	# libraries to install
+if (Sys.getenv("R_ARCH")== "/i386" ) {    # install RODBC only if using 32 bit system
+packages<-c("RODBC","shiny","shinythemes","igraph","network","sna", "GGally", "intergraph","dplyr")	# libraries to install
+} else {
+packages<-c("shiny","shinythemes","igraph","network","sna","GGally", "intergraph","dplyr")	# libraries to install
 }
 # Load libraries
 n.lib<- length(packages)
@@ -21,7 +21,8 @@ for (l in 1:n.lib) {
   if (!require(packages[l], character.only=T, quietly=T)) {
     install.packages(packages[l])
     library(packages[l], character.only=T)
-  }}
+  }
+}
 
 rm(list=ls(all=TRUE))
 
@@ -41,7 +42,7 @@ ui <- navbarPage( "collard",
   tabPanel("All Collars Table",
            fluidPage(
              h4("All Animal Collars:"),
-             dataTableOutput("allCollars")
+               dataTableOutput("allCollars")
            )
            ),
   
@@ -61,13 +62,12 @@ ui <- navbarPage( "collard",
            #plotOutput("netMap"),
            #plotPNG(func=netMap(baseMapPlot, pop_graph)),
            ),
-  tabPanel(
-    "Find Available Frequencies",
+  tabPanel("Find Available Frequencies",
     sidebarLayout(
       sidebarPanel(
         numericInput(inputId='freqFinderMargin',
                      label='Margin between collars (MHz):',
-                     value=0.005,
+                     value=DEFAULT_FREQ_MARGIN,
                      min=0.001,
                      max=0.050,
                      step=0.0001),
@@ -119,7 +119,7 @@ ui <- navbarPage( "collard",
                  
                  numericInput(inputId='popFinderMargin',
                               label='Margin between collar frequencies (MHz):',
-                              value=0.005,
+                              value=DEFAULT_FREQ_MARGIN,
                               min=0.001,
                               max=0.050,
                               step=0.0001)
@@ -138,7 +138,7 @@ ui <- navbarPage( "collard",
   #            tabPanel("About")),
 )
 
-# Define server logic required to draw a histogram
+# Define server logic required to draw output plots and tables
 server <- function(input, output) {
   
    output$distPlot <- renderPlot({
