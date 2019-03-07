@@ -8,6 +8,7 @@ MIN_FREQ = 159.0
 MAX_FREQ = 161.0
 FREQ_INC = 0.001
 ALL_FREQUENCIES = seq(MIN_FREQ, MAX_FREQ, by=FREQ_INC)
+DEFAULT_FREQ_MARGIN = 0.0049
 
 attr_file = "attributes.csv"
 network_file = "network.csv"
@@ -37,34 +38,75 @@ pretty_pops = paste(pretty_pops, pop_codes)
 # Read the All Collars Database into a dataframe:  check for 32 / 64 bit and network connectivity use Union Query if 32, o/w read txt file
 # network location    M:\DatabaseTables
 
-test.sys<-Sys.getenv("R_ARCH")
-if(test.sys== "/i386" & dir.exists("M:/")){
+test.sys <- Sys.getenv("R_ARCH")
+if (test.sys == "/i386" & dir.exists("M:/")) {
   # 32 bit allows for using MS Access database directly
-myconn <-odbcConnectAccess("M:/AllProgramCollars.mdb")
-sql1<-"SELECT Bobcat.Frequency, Bobcat.CaptDate, Bobcat.AnimalType, Bobcat.ID, Bobcat.Location, Bobcat.Type,Bobcat.Make, Bobcat.Status, Bobcat.HU FROM Bobcat"
-sql2<-"SELECT SheepCollarsOffice.CollarFreq,'' AS ddate,  SheepCollarsOffice.AnimalType, '' AS id,SheepCollarsOffice.Location, SheepCollarsOffice.CollarType, SheepCollarsOffice.CollarMake, SheepCollarsOffice.Status, SheepCollarsOffice.HU FROM SheepCollarsOffice"
-sql3<-"SELECT Elk.Frequency, Elk.CaptDate, Elk.AnimalType, Elk.ID, Elk.Location, Elk.Type, Elk.Make, Elk.Status, Elk.HU FROM Elk"
-sql4<-"SELECT DogCollars.Frequency, DogCollars.CaptDate, DogCollars.AnimalType, DogCollars.ID, DogCollars.Location, DogCollars.Type, DogCollars.Make, DogCollars.Status, DogCollars.HU FROM DogCollars"
-sql5<-"SELECT OtherSpecies.Frequency, OtherSpecies.CaptDate, OtherSpecies.AnimalType, OtherSpecies.ID, OtherSpecies.Location, OtherSpecies.Type, OtherSpecies.Make, OtherSpecies.Status, OtherSpecies.HU FROM OtherSpecies"
-sql6<-"SELECT Pronghorn.Frequency, Pronghorn.CaptDate, Pronghorn.AnimalType, Pronghorn.ID, Pronghorn.Location, Pronghorn.Type, Pronghorn.Make, Pronghorn.Status, Pronghorn.HU FROM Pronghorn"
-sql7<-"SELECT SageGrouse2014.Frequency, SageGrouse2014.CaptDate, SageGrouse2014.AnimalType, SageGrouse2014.ID, SageGrouse2014.Location, SageGrouse2014.Type, SageGrouse2014.Make, SageGrouse2014.Status, SageGrouse2014.HU FROM SageGrouse2014"
-sql8<-"SELECT RVDall.CollarFreq, '' AS [date], 'deer' AS AnimalType, RVDall.DeerID, Left([DeerID],2) AS Location, 'VHF/GPS' AS type, 'Various' AS Make, RVDall.Status, Left([DeerID],2) AS HU FROM RVDall"
-sql9<-"SELECT AllSheepCollars.VHFColFreq, left([AllSheepCollars].[Datedt],10) as date1, 'bighorn' AS AnimalType, AllSheepCollars.AnimalID,AllSheepCollars.RU, AllSheepCollars.Type, AllSheepCollars.VHFMake AS Make, AllSheepCollars.StatusVHF, AllSheepCollars.Herd FROM AllSheepCollars WHERE (((AllSheepCollars.StatusVHF) Like 'ow' Or (AllSheepCollars.StatusVHF)='aw' Or (AllSheepCollars.StatusVHF)='ORD'))"
-sql10<-"SELECT CurrentCollarRVDOffice.CollarFreq, '' AS [date], 'deer' AS AnimalType, CurrentCollarRVDOffice.DeerID, Left([DeerID],2) AS Location, 'VHF' AS type, 'ATS' AS Make, CurrentCollarRVDOffice.Status, Left([DeerID],2) AS HU FROM CurrentCollarRVDOffice"
-sql11<-"SELECT AllSheepCollars.GPSColFreq, Left(AllSheepCollars.Datedt,10) AS date1, 'bighorn' AS AnimalType, AllSheepCollars.AnimalID, AllSheepCollars.RU, IIf([StatusGPS] Like '*w','GPS','') AS Type, AllSheepCollars.GPSMake AS Make, AllSheepCollars.StatusGPS, AllSheepCollars.Herd FROM AllSheepCollars WHERE (((AllSheepCollars.GPSColFreq) Is Not Null) AND ((AllSheepCollars.StatusGPS) Like 'aw*' Or (AllSheepCollars.StatusGPS) Like 'ow' Or (AllSheepCollars.StatusGPS) Like 'ORD  '))"
-sql12<-"SELECT CollarsOnOrder.Frequency, CollarsOnOrder.CaptDate, CollarsOnOrder.AnimalType, CollarsOnOrder.ID, CollarsOnOrder.Location, CollarsOnOrder.Type, CollarsOnOrder.Make, CollarsOnOrder.Status, CollarsOnOrder.HU FROM CollarsOnOrder ORDER BY Bobcat.Frequency;"
-qry<-paste(sql1,sql2,sql3,sql4,sql5,sql6,sql7,sql8,sql9,sql10,sql11,sql12,sep=" UNION ")
-collars <- sqlQuery(myconn,qry)
-close(myconn) }else{
-
-# 64 bit solution (no RODBC)
-if(dir.exists("M:/")){dir='M:/DatabaseTables'
-collars_file = paste(dir,'AllCollarsList.txt',sep='/')
-}else{collars_file = 'AllCollarsList.txt'
-collars = read.csv(collars_file, header=TRUE, stringsAsFactors=F)}}
-names(collars)=c("frequency","capture_date","species","animal_id","region","type","model","status","location")
-collars$species<-as.character(collars$species)
-collars$location<-as.character(collars$location)
+  myconn <- odbcConnectAccess("M:/AllProgramCollars.mdb")
+  sql1 <-
+    "SELECT Bobcat.Frequency, Bobcat.CaptDate, Bobcat.AnimalType, Bobcat.ID, Bobcat.Location, Bobcat.Type,Bobcat.Make, Bobcat.Status, Bobcat.HU FROM Bobcat"
+  sql2 <-
+    "SELECT SheepCollarsOffice.CollarFreq,'' AS ddate,  SheepCollarsOffice.AnimalType, '' AS id,SheepCollarsOffice.Location, SheepCollarsOffice.CollarType, SheepCollarsOffice.CollarMake, SheepCollarsOffice.Status, SheepCollarsOffice.HU FROM SheepCollarsOffice"
+  sql3 <-
+    "SELECT Elk.Frequency, Elk.CaptDate, Elk.AnimalType, Elk.ID, Elk.Location, Elk.Type, Elk.Make, Elk.Status, Elk.HU FROM Elk"
+  sql4 <-
+    "SELECT DogCollars.Frequency, DogCollars.CaptDate, DogCollars.AnimalType, DogCollars.ID, DogCollars.Location, DogCollars.Type, DogCollars.Make, DogCollars.Status, DogCollars.HU FROM DogCollars"
+  sql5 <-
+    "SELECT OtherSpecies.Frequency, OtherSpecies.CaptDate, OtherSpecies.AnimalType, OtherSpecies.ID, OtherSpecies.Location, OtherSpecies.Type, OtherSpecies.Make, OtherSpecies.Status, OtherSpecies.HU FROM OtherSpecies"
+  sql6 <-
+    "SELECT Pronghorn.Frequency, Pronghorn.CaptDate, Pronghorn.AnimalType, Pronghorn.ID, Pronghorn.Location, Pronghorn.Type, Pronghorn.Make, Pronghorn.Status, Pronghorn.HU FROM Pronghorn"
+  sql7 <-
+    "SELECT SageGrouse2014.Frequency, SageGrouse2014.CaptDate, SageGrouse2014.AnimalType, SageGrouse2014.ID, SageGrouse2014.Location, SageGrouse2014.Type, SageGrouse2014.Make, SageGrouse2014.Status, SageGrouse2014.HU FROM SageGrouse2014"
+  sql8 <-
+    "SELECT RVDall.CollarFreq, '' AS [date], 'deer' AS AnimalType, RVDall.DeerID, Left([DeerID],2) AS Location, 'VHF/GPS' AS type, 'Various' AS Make, RVDall.Status, Left([DeerID],2) AS HU FROM RVDall"
+  sql9 <-
+    "SELECT AllSheepCollars.VHFColFreq, left([AllSheepCollars].[Datedt],10) as date1, 'bighorn' AS AnimalType, AllSheepCollars.AnimalID,AllSheepCollars.RU, AllSheepCollars.Type, AllSheepCollars.VHFMake AS Make, AllSheepCollars.StatusVHF, AllSheepCollars.Herd FROM AllSheepCollars WHERE (((AllSheepCollars.StatusVHF) Like 'ow' Or (AllSheepCollars.StatusVHF)='aw' Or (AllSheepCollars.StatusVHF)='ORD'))"
+  sql10 <-
+    "SELECT CurrentCollarRVDOffice.CollarFreq, '' AS [date], 'deer' AS AnimalType, CurrentCollarRVDOffice.DeerID, Left([DeerID],2) AS Location, 'VHF' AS type, 'ATS' AS Make, CurrentCollarRVDOffice.Status, Left([DeerID],2) AS HU FROM CurrentCollarRVDOffice"
+  sql11 <-
+    "SELECT AllSheepCollars.GPSColFreq, Left(AllSheepCollars.Datedt,10) AS date1, 'bighorn' AS AnimalType, AllSheepCollars.AnimalID, AllSheepCollars.RU, IIf([StatusGPS] Like '*w','GPS','') AS Type, AllSheepCollars.GPSMake AS Make, AllSheepCollars.StatusGPS, AllSheepCollars.Herd FROM AllSheepCollars WHERE (((AllSheepCollars.GPSColFreq) Is Not Null) AND ((AllSheepCollars.StatusGPS) Like 'aw*' Or (AllSheepCollars.StatusGPS) Like 'ow' Or (AllSheepCollars.StatusGPS) Like 'ORD  '))"
+  sql12 <-
+    "SELECT CollarsOnOrder.Frequency, CollarsOnOrder.CaptDate, CollarsOnOrder.AnimalType, CollarsOnOrder.ID, CollarsOnOrder.Location, CollarsOnOrder.Type, CollarsOnOrder.Make, CollarsOnOrder.Status, CollarsOnOrder.HU FROM CollarsOnOrder ORDER BY Bobcat.Frequency;"
+  qry <-
+    paste(sql1,
+          sql2,
+          sql3,
+          sql4,
+          sql5,
+          sql6,
+          sql7,
+          sql8,
+          sql9,
+          sql10,
+          sql11,
+          sql12,
+          sep = " UNION ")
+  collars <- sqlQuery(myconn, qry)
+  close(myconn)
+} else{
+  # 64 bit solution (no RODBC)
+  if (dir.exists("M:/")) {
+    dir = 'M:/DatabaseTables'
+    collars_file = paste(dir, 'AllCollarsList.txt', sep = '/')
+  } else {
+    collars_file = 'AllCollarsList.txt'
+  }
+  collars = read.csv(collars_file,
+                       header = F,
+                       stringsAsFactors = F)
+}
+names(collars) = c(
+  "frequency",
+  "capture_date",
+  "species",
+  "animal_id",
+  "region",
+  "type",
+  "model",
+  "status",
+  "location"
+)
+collars$species <- as.character(collars$species)
+collars$location <- as.character(collars$location)
 
 # Add population field to the collars table:
 collars = full_join(collars, pop_attributes[c('species','location','population')])
@@ -129,25 +171,25 @@ find_neighborhood_df = function(pop_graph, pop_attributes, input_pops) {
 
 #### Functions for finding available populations: ####
 
-find_conflict_collars = function(pop_graph, collars, input_freq, freq_margin = 0.005) {
-  collars_aw = collars[grep("(AW|order)",collars$status ),]
+find_conflict_collars = function(pop_graph, collars, input_freq, freq_margin = DEFAULT_FREQ_MARGIN) {
+  collars_aw = collars[grep("(AW|ORD)",collars$status ),]
   collars_near = collars_aw[abs(collars_aw$frequency - input_freq) < freq_margin,]
   return(collars_near)
 }
 
 find_collars_in_range = function(pop_graph, collars, lo_f, hi_f) {
-  collars_aw = collars[grep("(AW|order)",collars$status ),]
+  collars_aw = collars[grep("(AW|ORD)",collars$status ),]
   collars_in_range = collars_aw[(collars_aw$frequency >= lo_f) & (collars_aw$frequency <= hi_f) , ]
   return(collars_in_range)
 }
 
-find_occupied_pops = function(pop_graph, collars, input_freq, freq_margin = 0.005) {
+find_occupied_pops = function(pop_graph, collars, input_freq, freq_margin = DEFAULT_FREQ_MARGIN) {
   collars_near = find_conflict_collars(pop_graph, collars, input_freq, freq_margin=freq_margin)
   occupied_pops = unique(collars_near[c('population', 'species','location')])
   return(occupied_pops)
 }
 
-find_conflict_pops = function(pop_graph, collars, input_freq, freq_margin = 0.005) {
+find_conflict_pops = function(pop_graph, collars, input_freq, freq_margin = DEFAULT_FREQ_MARGIN) {
   occupied_pops = find_occupied_pops(pop_graph, collars, input_freq=input_freq, freq_margin=freq_margin)
   # occupied_nodes = V(pop_graph)[V(pop_graph)$name %in% occupied_pops$population]
   # occupied_neighborhoods = ego(pop_graph, 1, nodes = occupied_nodes, mindist = 0)
@@ -157,7 +199,7 @@ find_conflict_pops = function(pop_graph, collars, input_freq, freq_margin = 0.00
   return(conflict_pops)
 }
 
-find_available_pops = function(pop_graph, collars, input_freq, input_species = 'none', freq_margin = 0.005) {
+find_available_pops = function(pop_graph, collars, input_freq, input_species = 'none', freq_margin = DEFAULT_FREQ_MARGIN) {
   conflict_pops = find_conflict_pops(pop_graph, collars, input_freq, freq_margin=freq_margin)
   available_pops = difference(V(pop_graph), conflict_pops)
   if(input_species != 'none') {
@@ -170,16 +212,16 @@ find_available_pops = function(pop_graph, collars, input_freq, input_species = '
 
 ##### Functions for finding available frequencies: ####
 
-within_margin = function(f, set, margin = 0.005){
+within_margin = function(f, set, margin = DEFAULT_FREQ_MARGIN){
   return(all(abs(f - set) > margin, na.rm=T))
 }
 
-band_complement = function(input_freqs, all_freqs = ALL_FREQUENCIES, freq_margin = 0.005) {
+band_complement = function(input_freqs, all_freqs = ALL_FREQUENCIES, freq_margin = DEFAULT_FREQ_MARGIN) {
   ix = sapply(all_freqs, function(x) within_margin(f=x, set=input_freqs, margin=freq_margin))
   return(all_freqs[ix])
 }
 
-find_available_freqs = function(pop_graph, collars, input_pops, freq_margin=0.005, all_freqs=ALL_FREQUENCIES) {
+find_available_freqs = function(pop_graph, collars, input_pops, freq_margin=DEFAULT_FREQ_MARGIN, all_freqs=ALL_FREQUENCIES) {
   neighborhood_pops = find_neighborhood(pop_graph, input_pops)
   neighborhood_freqs = collars[collars$population %in% neighborhood_pops$name, 'frequency']
   neighborhood_freqs = unique(sort(neighborhood_freqs))
@@ -187,7 +229,7 @@ find_available_freqs = function(pop_graph, collars, input_pops, freq_margin=0.00
   return(avail_freqs)
 }
 
-plot_available = function(pop_graph, collars, input_pops, freq_margin=0.005, all_freqs=ALL_FREQUENCIES) {
+plot_available = function(pop_graph, collars, input_pops, freq_margin=DEFAULT_FREQ_MARGIN, all_freqs=ALL_FREQUENCIES) {
   f = find_available_freqs(pop_graph, collars, input_pops, freq_margin = freq_margin, all_freq = all_freqs)
   f = data.frame(f)
   ylabel = do.call(paste, as.list(input_pops))
@@ -202,3 +244,4 @@ plot_available = function(pop_graph, collars, input_pops, freq_margin=0.005, all
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank())
 }
+
