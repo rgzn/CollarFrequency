@@ -11,6 +11,7 @@ R Shiny App to find non-conflicting VHF frequencies. Helps for ordering collars 
   - shiny
   - shinythemes
   - igraph
+  - network
   - GGally
   - dplyr
   - ggplot2
@@ -47,6 +48,7 @@ If note already installed, install the required r packages:
 install.packages(c(
     "GGally",
     "igraph",
+    "network",
     "shiny",
     "shinythemes",
     "dplyr",
