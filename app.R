@@ -9,25 +9,33 @@
 #  added in library load routine to automatically load libraries if not installed  -- load RODBC only if 32 bit system
 #  changed the rendering for the Find Populations for Collars  tab for readability on smaller monitors
 
-rm(list=ls())							#clears the workspace
-if (Sys.getenv("R_ARCH")== "/i386" ) {    # install RODBC only if using 32 bit system
-packages<-c("RODBC","shiny","shinythemes","igraph","network","sna", "GGally", "intergraph","dplyr")	# libraries to install
-} else {
-packages<-c("shiny","shinythemes","igraph","network","sna","GGally", "intergraph","dplyr")	# libraries to install
-}
-# Load libraries
-n.lib<- length(packages)
-for (l in 1:n.lib) {
-  if (!require(packages[l], character.only=T, quietly=T)) {
-    install.packages(packages[l])
-    library(packages[l], character.only=T)
-  }
-}
+# rm(list=ls())							#clears the workspace
+# if (Sys.getenv("R_ARCH")== "/i386" ) {    # install RODBC only if using 32 bit system
+# packages<-c("RODBC","shiny","shinythemes","igraph","network","sna", "GGally", "intergraph","dplyr")	# libraries to install
+# } else {
+# packages<-c("shiny","shinythemes","igraph","network","sna","GGally", "intergraph","dplyr")	# libraries to install
+# }
+# # Load libraries
+# n.lib<- length(packages)
+# for (l in 1:n.lib) {
+#   if (!require(packages[l], character.only=T, quietly=T)) {
+#     # install.packages(packages[l])
+#     library(packages[l], character.only=T)
+#   }
+# }
+# 
+# rm(list=ls(all=TRUE))
 
-rm(list=ls(all=TRUE))
 
-#library(shiny)
-#library(shinythemes)
+
+library(shiny)
+library(shinythemes)
+library(igraph)
+library(network)
+library(sna)
+library(GGally)
+library(intergraph)
+library(dplyr)
 library(ggplot2)
 
 source("freq.r")
@@ -114,6 +122,7 @@ ui <- navbarPage( "collard",
                                "elk",
                                "pronghorn",
                                "bear",
+                               "lion",
                                "none"
                              )),
                  

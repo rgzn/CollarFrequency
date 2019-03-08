@@ -66,6 +66,8 @@ if (test.sys == "/i386" & dir.exists("M:/")) {
     "SELECT AllSheepCollars.GPSColFreq, Left(AllSheepCollars.Datedt,10) AS date1, 'bighorn' AS AnimalType, AllSheepCollars.AnimalID, AllSheepCollars.RU, IIf([StatusGPS] Like '*w','GPS','') AS Type, AllSheepCollars.GPSMake AS Make, AllSheepCollars.StatusGPS, AllSheepCollars.Herd FROM AllSheepCollars WHERE (((AllSheepCollars.GPSColFreq) Is Not Null) AND ((AllSheepCollars.StatusGPS) Like 'aw*' Or (AllSheepCollars.StatusGPS) Like 'ow' Or (AllSheepCollars.StatusGPS) Like 'ORD  '))"
   sql12 <-
     "SELECT CollarsOnOrder.Frequency, CollarsOnOrder.CaptDate, CollarsOnOrder.AnimalType, CollarsOnOrder.ID, CollarsOnOrder.Location, CollarsOnOrder.Type, CollarsOnOrder.Make, CollarsOnOrder.Status, CollarsOnOrder.HU FROM CollarsOnOrder ORDER BY Bobcat.Frequency;"
+  # sql13 <-
+  #  "SELECT CurrentLion.VHF, CurrentLion.CaptDate, CurrentLion.AnimalType, CurrentLion.ID, CurrentLion.Location, CurrentLion.Type,CurrentLion.Make, CurrentLion.Status, CurrentLion.HU FROM CurrentLion"
   qry <-
     paste(sql1,
           sql2,
