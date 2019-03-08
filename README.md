@@ -1,4 +1,5 @@
 # CollarFrequency
+
 R Shiny App to find non-conflicting VHF frequencies. Helps for ordering collars and assigning new collars to populations. 
 
 ## Installation: 
@@ -28,11 +29,35 @@ This database export should be of the following format:
 "160.462","20171115","desert bighorn",,"White Mountains","GPS",,"AW","White Mountains"
 ```
 
-## Running: 
+## Running:   
+
 The app is an R shiny app and can be run from Shiny Server or locally from within RStudio. 
 From RStudio:
+
   - open ```frequency.Rproj```
   - select ```app.R```
   - hit the "Run App" button
   
-## Use:
+## Use:   
+
+There are 4 panels to the app. The function of each panel is described here:
+
+  - __All Collars Table__:
+   This is just an interactive version of the all collars table. It is the local copy of the database the app is using. 
+   It can be used to search for specific collars and their deployment status.
+  - __Interference Network__:
+   This section contains 2 parts. The first is a plot of all the collared populations and their interference edges. 
+   The nodes of  the graph represent populations, and the edges represent the potential for VHF interference between
+   the populations. The second part of this panel is a table of the attributes of each population. This can be used
+   to look up the population codes for your species.
+  - __Find Available Frequencies__: 
+  Use this panel to find which parts of the spectrum are available for your select populations. 
+  Select the populations where you want to place collars, and the plot will show in grey all frequencies that don't interfere
+  with existing collars. The plot can be moused over and selected to get details on specific frequencies and the collars
+  within selected frequency ranges.
+  The "Interfering Populations" table shows which populations have the potential for collar conflicts.
+  - __Find Populations for Collars__:
+  Use this panel when you have collars with specific frequencies and you want to see where they may be placed without conflict. 
+  Input your desired species and collar frequency. 
+  Conflicting collars are shown and available populations for your species are displayed.
+  
