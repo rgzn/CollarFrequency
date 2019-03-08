@@ -61,3 +61,7 @@ There are 4 panels to the app. The function of each panel is described here:
   Input your desired species and collar frequency. 
   Conflicting collars are shown and available populations for your species are displayed.
   
+## Example:
+A version of this app is running at:
+https://snbs.shinyapps.io/frequency/
+  
