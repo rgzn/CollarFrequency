@@ -16,7 +16,9 @@ laur,bighorn,Laurel Creek,-118.44068,36.34934
 cd_d,deer,CD,-118.54221,37.71746
 rv_d,deer,RV,-118.55034,37.39549
 gd_d,deer,GD,-118.2303,37.006
-mw_d,deer,MW,-119.2359,38.23864
+ml_d,deer,ML,-119.2359,38.23864
+ew_d,deer,EW,-118.9315,38.6918
+ww_d,deer,WW,-119.3097,38.7732
 id_e,elk,Independence,-118.16044,36.79294
 lp_e,elk,Lone Pine,-118.00123,36.63145
 bp_e,elk,Big Pine,-118.3229,37.09935
@@ -25,3 +27,5 @@ bo_p,pronghorn,Bodie Hills,-119.26027,38.40051
 lp_b,bobcat,Lone Pine,-118.13932,36.58842
 silv,bighorn,Silver Canyon,,
 whit,bighorn,White Mountains,,
+so_l,lion,South,,
+no_l,lion,North,,
