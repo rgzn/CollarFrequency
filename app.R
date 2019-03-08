@@ -31,7 +31,7 @@
 library(shiny)
 library(shinythemes)
 library(igraph)
-# library(network)
+library(network)
 # library(sna)
 library(GGally)
 # library(intergraph)
