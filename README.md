@@ -2,6 +2,19 @@
 
 R Shiny App to find non-conflicting VHF frequencies. Helps for ordering collars and assigning new collars to populations. 
 
+## Requirements:
+
+### Software: 
+  - R >= 3.3
+  - RStudio >= 1.1
+### R Packages:
+  - shiny
+  - shinythemes
+  - igraph
+  - GGally
+  - dplyr
+  - ggplot2
+  
 ## Installation: 
 
 Download this project to your home computer. It will expect to find one of 3 data sources on your computer:
@@ -27,6 +40,17 @@ This database export should be of the following format:
 "160.460","10/23/2018","bighorn","S516","Southern","GPS","SirTrack Pinnacle Lite","AW","Mt. Baxter"
 "160.460","10/26/2017","bighorn","S278","Southern","VHF","Telonics mod-315","AW","Olancha Peak"
 "160.462","20171115","desert bighorn",,"White Mountains","GPS",,"AW","White Mountains"
+```
+
+If note already installed, install the required r packages:
+```
+install.packages(c(
+    "GGally",
+    "igraph",
+    "shiny",
+    "shinythemes",
+    "dplyr",
+    "ggplot2"))
 ```
 
 ## Running:   
