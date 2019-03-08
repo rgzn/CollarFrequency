@@ -31,10 +31,10 @@
 library(shiny)
 library(shinythemes)
 library(igraph)
-library(network)
-library(sna)
+# library(network)
+# library(sna)
 library(GGally)
-library(intergraph)
+# library(intergraph)
 library(dplyr)
 library(ggplot2)
 
